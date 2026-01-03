@@ -1,12 +1,22 @@
-FROM maven:3.9.9-eclipse-temurin-21-jammy AS BUILD_IMAGE
-RUN git clone https://github.com/ankim-kumar/three-tier-Java-web-application.git
-RUN cd three-tier-Java-web-application && git checkout containers && mvn install
+# ---------- BUILD STAGE ----------
+FROM maven:3.9.9-eclipse-temurin-21-jammy AS build
 
-FROM tomcat:10-jdk21
+WORKDIR /app
+
+# Copy source code from GitHub Actions workspace
+COPY . .
+
+# Build WAR
+RUN mvn clean package -DskipTests
+
+# ---------- RUNTIME STAGE ----------
+FROM tomcat:10.1-jdk21
 
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-COPY --from=BUILD_IMAGE vprofile-project/target/vprofile-v2.war /usr/local/tomcat/webapps/ROOT.war
+COPY --from=build /app/target/vprofile-v2.war \
+     /usr/local/tomcat/webapps/ROOT.war
 
 EXPOSE 8080
+
 CMD ["catalina.sh", "run"]
