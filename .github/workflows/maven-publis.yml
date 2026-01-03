@@ -1,0 +1,31 @@
+# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
+# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
+
+name: java CICD
+
+on:
+  push:
+    branches: ["containers"]
+  pull_request:
+    branches: ["containers"]
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Gitleaks Setup
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --source . --exit-code 1
+      - name: Trivy FS Vulnerability Scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: '.'
+          format: table
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
