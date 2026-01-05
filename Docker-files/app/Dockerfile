@@ -7,7 +7,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests 
 
 # ---------- RUNTIME STAGE ----------
 FROM tomcat:10.1-jdk21
@@ -19,3 +19,4 @@ COPY --from=build /app/target/vprofile-v2.war \
 
 EXPOSE 8080
 CMD ["catalina.sh", "run"]
+
