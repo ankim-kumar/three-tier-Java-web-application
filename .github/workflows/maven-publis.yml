@@ -25,7 +25,7 @@ jobs:
     name: Trivy Filesystem Scan
     runs-on: self-hosted
     needs: gitleaks_scan
-
+    
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
