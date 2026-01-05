@@ -1,31 +1,89 @@
-# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
-# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
-
-name: java CICD
+name: Java CICD build images
 
 on:
   push:
     branches: ["containers"]
   pull_request:
     branches: ["containers"]
+
 jobs:
-  build:
+  gitleaks_scan:
+    name: Gitleaks Secret Scan
     runs-on: self-hosted
 
     steps:
-      - name: Check out code
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Gitleaks Setup
+      - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         with:
           args: detect --source . --exit-code 1
+
+
+  trivy_scan:
+    name: Trivy Filesystem Scan
+    runs-on: self-hosted
+    needs: gitleaks_scan
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
       - name: Trivy FS Vulnerability Scan
         uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: fs
-          scan-ref: '.'
+          scan-ref: .
           format: table
           ignore-unfixed: true
           vuln-type: os,library
           severity: CRITICAL,HIGH
+
+
+  build_and_push_images:
+    name: Build & Push Docker Images
+    runs-on: self-hosted
+    needs: trivy_scan
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # DockerHub login MUST be in same job
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push App Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Docker-files/app/Dockerfile
+          push: true
+          tags: |
+            ankim628/vprofile-app:latest
+            ankim628/vprofile-app:build-${{ github.run_number }}
+            ankim628/vprofile-app:${{ github.sha }}
+
+      - name: Build & Push DB Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Docker-files/db/Dockerfile
+          push: true
+          tags: |
+            ankim628/vprofile-db:latest
+            ankim628/vprofile-db:build-${{ github.run_number }}
+
+      - name: Build & Push Web Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Docker-files/web/Dockerfile
+          push: true
+          tags: |
+            ankim628/vprofile-web:latest
+            ankim628/vprofile-web:build-${{ github.run_number }}
