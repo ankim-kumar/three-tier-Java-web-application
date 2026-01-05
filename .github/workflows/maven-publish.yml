@@ -5,7 +5,7 @@ name: Java CICD
 
 on:
   push:
-    branches: ["containers", "main"]
+    branches: ["containers"]
   pull_request:
     branches: ["containers"]
 
