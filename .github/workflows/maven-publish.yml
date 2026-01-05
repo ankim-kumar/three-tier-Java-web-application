@@ -13,37 +13,34 @@ jobs:
   gitleaks:
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: gitleaks/gitleaks-action@v2
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
         with:
           args: detect --source . --exit-code 1
-
 
   trivy:
     runs-on: self-hosted
     needs: gitleaks
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: aquasecurity/trivy-action@0.28.0
+      - name: Trivy FS Scan
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: fs
           scan-ref: .
           severity: CRITICAL,HIGH
 
-
   docker_build_push:
     runs-on: self-hosted
     needs: trivy
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -55,12 +52,11 @@ jobs:
       - name: Build & Push App Image
         uses: docker/build-push-action@v5
         with:
-          context: Docker-files/app
+          context: .
           file: Docker-files/app/Dockerfile
           push: true
           tags: |
-            ankim628/threevproapp:${{ github.ref_name }}-${{ github.run_number }}
-            ankim628/threevproapp:${{ github.ref_name }}-${{ github.sha }}
+            ankim628/threevproapp:containers-${{ github.run_number }}
 
       # ---------- DB ----------
       - name: Build & Push DB Image
@@ -70,7 +66,7 @@ jobs:
           file: Docker-files/db/Dockerfile
           push: true
           tags: |
-            ankim628/threevpromysql:${{ github.ref_name }}-${{ github.run_number }}
+            ankim628/threevpromysql:containers-${{ github.run_number }}
 
       # ---------- WEB ----------
       - name: Build & Push Web Image
@@ -80,14 +76,6 @@ jobs:
           file: Docker-files/web/Dockerfile
           push: true
           tags: |
-            ankim628/threevproweb:${{ github.ref_name }}-${{ github.run_number }}
+            ankim628/threevproweb:containers-${{ github.run_number }}
 
-      # ---------- PROD LATEST ----------
-      - name: Tag latest (main only)
-        if: github.ref_name == 'main'
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Docker-files/app/Dockerfile
-          push: true
-          tags: ankim628/threevproapp:latest
+
