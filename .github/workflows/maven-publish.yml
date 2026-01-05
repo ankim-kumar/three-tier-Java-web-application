@@ -55,7 +55,7 @@ jobs:
       - name: Build & Push App Image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: Docker-files/app
           file: Docker-files/app/Dockerfile
           push: true
           tags: |
@@ -66,7 +66,7 @@ jobs:
       - name: Build & Push DB Image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: Docker-files/db
           file: Docker-files/db/Dockerfile
           push: true
           tags: |
@@ -76,7 +76,7 @@ jobs:
       - name: Build & Push Web Image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: Docker-files/web
           file: Docker-files/web/Dockerfile
           push: true
           tags: |
