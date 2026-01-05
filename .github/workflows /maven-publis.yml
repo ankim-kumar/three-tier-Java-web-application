@@ -1,0 +1,89 @@
+name: Java CICD build images
+
+on:
+  push:
+    branches: ["containers"]
+  pull_request:
+    branches: ["containers"]
+
+jobs:
+  gitleaks_scan:
+    name: Gitleaks Secret Scan
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --source . --exit-code 1
+
+
+  trivy_scan:
+    name: Trivy Filesystem Scan
+    runs-on: self-hosted
+    needs: gitleaks_scan
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Trivy FS Vulnerability Scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+
+  build_and_push_images:
+    name: Build & Push Docker Images
+    runs-on: self-hosted
+    needs: trivy_scan
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # DockerHub login MUST be in same job
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push App Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Docker-files/app/Dockerfile
+          push: true
+          tags: |
+            ankim628/threevproapp:latest
+            ankim628/threevproapp:build-${{ github.run_number }}
+            ankim628/threevproapp:${{ github.sha }}
+
+      - name: Build & Push DB Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Docker-files/db/Dockerfile
+          push: true
+          tags: |
+            ankim628/threevpromysql:latest
+            ankim628/threevpromysql:build-${{ github.run_number }}
+
+      - name: Build & Push Web Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Docker-files/web/Dockerfile
+          push: true
+          tags: |
+            ankim628/threevproweb:latest
+            ankim628/threevproweb:build-${{ github.run_number }}
