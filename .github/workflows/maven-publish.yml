@@ -10,7 +10,7 @@ on:
     branches: ["containers"]
 
 jobs:
-  gitleaks:
+  gitleaks: 
     runs-on: self-hosted
     steps:
       - name: Checkout code
