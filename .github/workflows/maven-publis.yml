@@ -54,7 +54,7 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build & Push App Image
@@ -64,9 +64,9 @@ jobs:
           file: Docker-files/app/Dockerfile
           push: true
           tags: |
-            ankim628/vprofile-app:latest
-            ankim628/vprofile-app:build-${{ github.run_number }}
-            ankim628/vprofile-app:${{ github.sha }}
+            ankim628/threevproapp:latest
+            ankim628/threevproapp:build-${{ github.run_number }}
+            ankim628/threevproapp:${{ github.sha }}
 
       - name: Build & Push DB Image
         uses: docker/build-push-action@v5
@@ -75,8 +75,8 @@ jobs:
           file: Docker-files/db/Dockerfile
           push: true
           tags: |
-            ankim628/vprofile-db:latest
-            ankim628/vprofile-db:build-${{ github.run_number }}
+            ankim628/threevpromysql:latest
+            ankim628/threevpromysql:build-${{ github.run_number }}
 
       - name: Build & Push Web Image
         uses: docker/build-push-action@v5
@@ -85,5 +85,5 @@ jobs:
           file: Docker-files/web/Dockerfile
           push: true
           tags: |
-            ankim628/vprofile-web:latest
-            ankim628/vprofile-web:build-${{ github.run_number }}
+            ankim628/threevproweb:latest
+            ankim628/threevproweb:build-${{ github.run_number }}
