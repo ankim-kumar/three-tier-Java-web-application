@@ -119,12 +119,16 @@ jobs:
 
       - name: Deploy to GKE
         run: |
-          kubectl apply -f k8s/namespace.yml
-          kubectl apply -f k8s/secrets.yml
-          kubectl apply -f k8s/mongodb-pvc.yml
-          kubectl apply -f k8s/mongodb-deployment.yml
-          kubectl apply -f k8s/mongodb-service.yml
-          kubectl apply -f k8s/backend-deployment.yml
-          kubectl apply -f k8s/backend-service.yml
-          kubectl apply -f k8s/frontend-deployment.yml
-          kubectl apply -f k8s/frontend-service.yml
+          kubectl apply -f kubedefs/namespace.yaml
+          kubectl apply -f kubedefs/secret.yaml
+          kubectl apply -f kubedefs/dbpvc.yaml
+          kubectl apply -f kubedefs/dbdeploy.yaml
+          kubectl apply -f kubedefs/dbservice.yaml
+          kubectl apply -f kubedefs/mcdep.yaml
+          kubectl apply -f kubedefs/mcservice.yaml
+          kubectl apply -f kubedefs/rmqdeploy.yaml
+          kubectl apply -f kubedefs/rmqservice.yaml
+          kubectl apply -f kubedefs/appdeploy.yaml
+          kubectl apply -f kubedefs/appservice.yaml
+          kubectl apply -f kubedefs/appingress.yaml
+          
