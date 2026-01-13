@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vprodb
+  namespace: java
   labels:
     app: vprodb
 spec:
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
       - name: vprodb
-        image: ankim628/threevpromysql:01
+        image: ankim628/threevpromysql:containers-12
         volumeMounts:
         - mountPath: /var/lib/mysql
           name: vpro-db-data

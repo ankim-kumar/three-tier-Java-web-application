@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vproapp
+  namespace: java
   labels:
     app: vproapp
 spec:
@@ -35,7 +36,7 @@ spec:
 
       containers:
       - name: vproapp
-        image: ankim628/threevproapp:01
+        image: ankim628/threevproapp:containers-12
         imagePullPolicy: Always
         ports:
         - name: vproapp-port
