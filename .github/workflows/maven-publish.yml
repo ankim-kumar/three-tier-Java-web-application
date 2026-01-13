@@ -23,7 +23,6 @@ jobs:
 
   trivy:
     runs-on: self-hosted
-    needs: gitleaks
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
