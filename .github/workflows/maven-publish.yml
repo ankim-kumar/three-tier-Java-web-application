@@ -7,7 +7,7 @@ on:
     branches: ["containers"]
 
 jobs:
-  # ---------------- SECURITY: GITLEAKS ----------------
+
   gitleaks:
     runs-on: self-hosted
     steps:
@@ -18,7 +18,7 @@ jobs:
         with:
           args: detect --source . --exit-code 1
 
-  # ---------------- BUILD & TEST ----------------
+
   testing:
     runs-on: ubuntu-latest
     steps:
@@ -36,7 +36,7 @@ jobs:
       - name: Checkstyle
         run: mvn checkstyle:checkstyle
 
-  # ---------------- SECURITY: TRIVY ----------------
+
   trivy:
     runs-on: self-hosted
     needs: testing
@@ -50,7 +50,7 @@ jobs:
           scan-ref: .
           severity: CRITICAL,HIGH
 
-  # ---------------- DOCKER BUILD & PUSH ----------------
+
   docker_build_push:
     runs-on: self-hosted
     needs: trivy
@@ -63,7 +63,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # ---------- APP ----------
+
       - name: Build & Push App Image
         uses: docker/build-push-action@v5
         with:
@@ -73,7 +73,7 @@ jobs:
           tags: |
             ankim628/threevproapp:containers-${{ github.run_number }}
 
-      # ---------- DB ----------
+
       - name: Build & Push DB Image
         uses: docker/build-push-action@v5
         with:
@@ -83,7 +83,7 @@ jobs:
           tags: |
             ankim628/threevpromysql:containers-${{ github.run_number }}
 
-      # ---------- WEB ----------
+
       - name: Build & Push Web Image
         uses: docker/build-push-action@v5
         with:
@@ -93,7 +93,7 @@ jobs:
           tags: |
             ankim628/threevproweb:containers-${{ github.run_number }}
 
-  # ---------------- DEPLOY TO GKE ----------------
+
   deploy-gke:
     runs-on: self-hosted
     needs: docker_build_push
@@ -115,6 +115,15 @@ jobs:
         with:
           cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
           location: ${{ secrets.GKE_REGION }}
+
+      - name: Install NGINX Ingress Controller
+        run: |
+          kubectl get ns ingress-nginx || kubectl create ns ingress-nginx
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.0/deploy/static/provider/cloud/deploy.yaml
+
+      - name: Wait for Ingress Controller
+        run: |
+          kubectl rollout status deployment ingress-nginx-controller -n ingress-nginx --timeout=300s    
 
       - name: Deploy to GKE
         run: |
