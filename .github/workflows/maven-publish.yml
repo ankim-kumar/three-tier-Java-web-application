@@ -138,5 +138,5 @@ jobs:
           kubectl apply -f kubedefs/rmqservice.yaml
           kubectl apply -f kubedefs/appdeploy.yaml
           kubectl apply -f kubedefs/appservice.yaml
-          kubectl apply -f kubedefs/appingress.yaml
+          kubectl apply -f kubedefs/appingress.yaml 
           
