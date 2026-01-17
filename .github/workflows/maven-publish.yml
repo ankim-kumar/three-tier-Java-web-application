@@ -35,7 +35,7 @@ jobs:
 
       - name: Checkstyle
         run: mvn checkstyle:checkstyle
-
+        
 
   trivy:
     runs-on: self-hosted
