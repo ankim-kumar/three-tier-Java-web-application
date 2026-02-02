@@ -2,9 +2,9 @@ name: Java CICD
 
 on:
   push:
-    branches: ["containers"]
+    branches: ["prod"]
   pull_request:
-    branches: ["containers"]
+    branches: ["prod"]
 
 jobs:
 
